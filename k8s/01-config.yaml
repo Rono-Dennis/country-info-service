@@ -12,8 +12,6 @@ data:
   DB_POOL_SIZE: "10"
   DDL_AUTO: "update"
 ---
-# DEMO ONLY: in a real cluster create this with `kubectl create secret` or an external secrets manager
-# (Vault, Sealed Secrets, External Secrets Operator) instead of committing credentials.
 apiVersion: v1
 kind: Secret
 metadata:
