@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: country-info-service
+  namespace: country-info-service
+  labels:
+    app: country-info-service
+spec:
+  type: ClusterIP
+  selector:
+    app: country-info-service
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: country-info-service
+  namespace: country-info-service
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "30"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: country-info-service.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: country-info-service
+                port:
+                  name: http

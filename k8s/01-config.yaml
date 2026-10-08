@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: country-info-service-config
+  namespace: country-info-service
+data:
+  DB_URL: "jdbc:mysql://mysql:3306/countrydb?useSSL=false&allowPublicKeyRetrieval=true"
+  SOAP_ENDPOINT: "http://webservices.oorsprong.org/websamples.countryinfo/CountryInfoService.wso"
+  SOAP_CONNECT_TIMEOUT: "3s"
+  SOAP_READ_TIMEOUT: "5s"
+  CACHE_SPEC: "maximumSize=1000,expireAfterWrite=24h"
+  DB_POOL_SIZE: "10"
+  DDL_AUTO: "update"
+---
+# DEMO ONLY: in a real cluster create this with `kubectl create secret` or an external secrets manager
+# (Vault, Sealed Secrets, External Secrets Operator) instead of committing credentials.
+apiVersion: v1
+kind: Secret
+metadata:
+  name: country-info-service-secret
+  namespace: country-info-service
+type: Opaque
+stringData:
+  DB_USER: "countryapp"
+  DB_PASSWORD: "change-me-app-password"
+  MYSQL_ROOT_PASSWORD: "change-me-root-password"

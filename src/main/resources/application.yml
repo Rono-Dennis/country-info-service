@@ -1,0 +1,87 @@
+server:
+  port: 8080
+  shutdown: graceful
+
+spring:
+  application:
+    name: country-info-service
+  lifecycle:
+    timeout-per-shutdown-phase: 20s
+  datasource:
+    url: ${DB_URL:jdbc:mysql://localhost:3306/countrydb?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true}
+    username: ${DB_USER:root}
+    password: ${DB_PASSWORD:rrootAdnum##6622}
+    hikari:
+      maximum-pool-size: ${DB_POOL_SIZE:10}
+      connection-timeout: 5000
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: ${DDL_AUTO:update}
+    properties:
+      hibernate:
+        default_batch_fetch_size: 50
+  cache:
+    type: caffeine
+    caffeine:
+      spec: ${CACHE_SPEC:maximumSize=1000,expireAfterWrite=24h}
+
+# External SOAP service
+soap:
+  endpoint: ${SOAP_ENDPOINT:http://webservices.oorsprong.org/websamples.countryinfo/CountryInfoService.wso}
+  connect-timeout: ${SOAP_CONNECT_TIMEOUT:3s}
+  read-timeout: ${SOAP_READ_TIMEOUT:5s}
+
+# Resilience4j: retry transient failures, open the circuit when the SOAP service is unhealthy
+resilience4j:
+  retry:
+    instances:
+      countrySoap:
+        max-attempts: 3
+        wait-duration: 300ms
+        enable-exponential-backoff: true
+        exponential-backoff-multiplier: 2
+        retry-exceptions:
+          - org.springframework.ws.WebServiceException
+        ignore-exceptions:
+          - com.ncba.countryInfoService.exception.CountryNotFoundException
+          - io.github.resilience4j.circuitbreaker.CallNotPermittedException
+  circuitbreaker:
+    instances:
+      countrySoap:
+        sliding-window-type: COUNT_BASED
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 20s
+        permitted-number-of-calls-in-half-open-state: 3
+        automatic-transition-from-open-to-half-open-enabled: true
+        register-health-indicator: true
+        record-exceptions:
+          - org.springframework.ws.WebServiceException
+        ignore-exceptions:
+          - com.ncba.countryInfoService.exception.CountryNotFoundException
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: when-authorized
+      group:
+        readiness:
+          include: readinessState,db
+  health:
+    circuitbreakers:
+      enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+logging:
+  level:
+    com.ncba.countryservice: INFO

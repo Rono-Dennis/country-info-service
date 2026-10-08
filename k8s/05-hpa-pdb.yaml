@@ -1,0 +1,35 @@
+# metrics-server
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: country-info-service
+  namespace: country-info-service
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: country-info-service
+  minReplicas: 2
+  maxReplicas: 6
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 120   # avoid flapping
+---
+# Keeps at least one pod up during node drains / cluster upgrades
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: country-info-service
+  namespace: country-info-service
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: country-info-service
