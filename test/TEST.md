@@ -416,7 +416,7 @@ docker run --rm -v "$(pwd)":/src -w /src maven:3.9-eclipse-temurin-21 mvn -B tes
 ```bash
 docker compose down            # stop, keep the data
 docker compose down -v         # stop AND delete the MySQL volume (fresh start)
-docker image rm country-service-app   # optional: remove the built image (name may differ; see `docker images`)
+docker image rm country-info-service-app   # optional: remove the built image (name may differ; see `docker images`)
 ```
 
 ---
