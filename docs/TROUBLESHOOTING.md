@@ -39,7 +39,7 @@ k top pods                              # CPU/memory (needs metrics-server)
 Every response carries `X-Correlation-Id` (and error bodies include `correlationId`). Find all log lines for it:
 
 ```bash
-k logs -l app=country-service --tail=-1 | grep '<correlation-id>'
+k logs -l app=country-info-service --tail=-1 | grep '<correlation-id>'
 ```
 
 Typical healthy sequence: `http_request` ← `lookup_started` ← `soap_call CountryISOCode` ← `soap_call FullCountryInfo` ← `lookup_stored`.
